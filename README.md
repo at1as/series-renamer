@@ -4,9 +4,9 @@ Renamer will rename episodes of TV series on your computer with a clear and cons
 
 ## Example
 
-Illegible titles will all be styled to follow the format {title}{S}{season#}{E}{episode#}.{extension}
+Illegible titles will all be styled to follow the format {title} {S}{season#}{E}{episode#}.{extension}
 
-a.series.title.s01e05.branding{year}.x264.HDTV.mp4  =>  A Series Title S01E05.mp4
+Ex. a.series.title.s01e05.branding{year}.x264.HDTV.mp4  =>  A Series Title S01E05.mp4
 
 ## Usage
 
@@ -14,14 +14,14 @@ Renamer is written in Go, and can be used two ways:
 
 - Download renamer to your computer
 - Place in the directory whose files you wish to rename
-- $cdmod 664 /path/to/directory/renamer
+- $cdmod 775 /path/to/directory/renamer
 - $/path/to/directory/renamer
 
-It can also be passed a path parameter
+It can also be passed an absolute path parameter
 
 - Download renamer to your computer
 - $cd download/location
-- $chmod 664 ./renamer
+- $chmod 775 ./renamer
 - ./renamer /path/to/directory/to/scan
 
 See ./renamer --help for details
