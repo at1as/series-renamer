@@ -4,7 +4,7 @@ Renamer will rename episodes of TV series on your computer with a clear and cons
 
 ## Example
 
-Illegible titles will all be styled to follow the format <title><SXXEXX>.<extension>
+Illegible titles will all be styled to follow the format {title}{S}{season#}{E}{episode#}.{extension}
 
 a.series.title.s01e05.branding{year}.x264.HDTV.mp4  =>  A Series Title S01E05.mp4
 
