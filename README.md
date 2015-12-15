@@ -1,30 +1,38 @@
-# Renamer
+# Series-Renamer
 
-Renamer will rename episodes of TV series on your computer with a clear and consistent style.
+Series-Renamer will rename episodes of TV series on your computer with a clear and consistent style.
 
 ## Example
 
 Illegible titles will all be styled to follow the format {title} {S}{season#}{E}{episode#}.{extension}
 
-Ex. a.series.title.s01e05.branding{year}.x264.HDTV.mp4  =>  A Series Title S01E05.mp4
+Ex. some.series.title.s01e05.branding{year}.x264.HDTV.mp4  =>  Some Series Title S01E05.mp4
 
 ## Usage
 
-Renamer is written in Go, and can be used two ways:
+Renamer is written in Go. To use:
 
-- Download renamer to your computer
+- First, Download renamer to your computer
+`$ git clone https://github.com/at1as/series-renamer.git`
+
+Renamer can be used any of these two ways:
+
 - Place in the directory whose files you wish to rename
-- $cdmod 775 /path/to/directory/renamer
-- $/path/to/directory/renamer
 
-It can also be passed an absolute path parameter
+```bash
+$ mv ./renamer.go /path/to/directory/renamer.go
+$ chmod 775 /path/to/directory/renamer.go
+$ go run /path/to/directory/renamer.go
+```
 
-- Download renamer to your computer
-- $cd download/location
-- $chmod 775 ./renamer
-- ./renamer /path/to/directory/to/scan
+- It can also be passed an absolute path parameter:
 
-See ./renamer --help for details
+```bash
+$ chmod 775 ./renamer.go
+$ go run ./renamer.go /path/to/directory/to/scan
+```
+
+See `go run renamer.go --help` for details
 
 
 The terminal output will show you what has been performed
@@ -32,14 +40,16 @@ The terminal output will show you what has been performed
 ## Limitations
 
 - Won't work is season and episode are dot-separated (ex., S01.E05)
-- Probably won't work on titles that are space-separated
-- Recursive folder search isn't implemented
-- Built and tested on unix/linux/mac environments. Unlikely to work on Windows
+- Not guarenteed to work on titles that are space-separated
+- Does not recurse directories
 
 ## Cowardly Disclaimer
 
-I haven't encountered any issues, however this script is renaming files on your system. Pass it the correct path, watch the terminal output to confirm the result is good, and use at your own risk.
+* Will rename files (for which there is no Edit/Undo)
+  * Ensure video files are in their own folder
+  * Currently the script is stateless and there is no rollback for changes
 
-## Why Go?
+## TODO
 
-Perhaps it's not the most convenient language for most people for such a tool, and it certainly doesn't need the efficiency Go offers. However, it's mostly an opportunity to play around and have some fun with what looks like a very interesting language.
+* Add '-i' flag to ignore filetypes (like '.srt') or substrings (like '(Dutch).srt')
+
