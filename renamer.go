@@ -14,8 +14,15 @@ func ensureTrailingSlash(pwd string) string {
   return strings.TrimSuffix(pwd, "/") + "/"
 }
 
+func splitSpaceOrDot(raw_string string) []string {
+  return strings.FieldsFunc(raw_string, func (r rune) bool {
+    return r == ' ' || r == '.'
+  })
+}
+
 func splitString(s, pwd string) {
-  sub_string := strings.Split(s, ".")
+
+  sub_string := splitSpaceOrDot(s)
   sections := len(sub_string)
   title, season, episode := "", "", ""
   season_found, episode_found := false, false
@@ -29,6 +36,7 @@ func splitString(s, pwd string) {
       section := len(sub_string[i])
 
       for j := 1; j < section; j++ {
+
         if season_found == false {
           // If the character directly after an 's'/'S' is a number, append it to season variable
           if sub_string[i][j] >= '0' && sub_string[i][j] <= '9' {
