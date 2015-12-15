@@ -7,6 +7,7 @@ Series-Renamer will rename episodes of TV series on your computer with a clear a
 Illegible titles will all be styled to follow the format **{title} {S}{season#}{E}{episode#}.{extension}**
 
 Ex. *some.series.title.s01e05.branding{1990}.x264.HDTV.mp4*  =>  *Some Series Title S01E05.mp4*
+
 Ex. *some series title s01e05 branding 1990 x264 HDTV.mp4*  =>  *Some Series Title S01E05.mp4*
 
 ## Usage
