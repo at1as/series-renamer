@@ -4,9 +4,12 @@ import (
   "fmt"
   "io/ioutil"
   "log"
+  "net/url"
   "os"
   "path/filepath"
   "strings"
+
+  "github.com/codegangsta/cli"
 )
 
 
@@ -20,17 +23,54 @@ func splitSpaceOrDot(raw_string string) []string {
   })
 }
 
-func splitString(s, pwd string) {
+func htmlUnescape(filename string, modify bool) string {
+  // Remove URL escaping (ex. "%20" -> " ")
+  if modify == false {
+    return filename
+  }
 
-  sub_string := splitSpaceOrDot(s)
+  unencoded_str, err := url.QueryUnescape(filename)
+  if err != nil {
+    return filename
+  }
+  return unencoded_str
+}
+
+func cutFromTitle(title string, text string, modify bool) string {
+  // Cut text from end of filename:
+  //  ex. cutFromTitle("filenameABC.mkv", "BC") -> "filenameA.mkv"
+  if modify == true && text != "" {
+    dot_separated := strings.Split(title, ".")
+
+    extension := dot_separated[len(dot_separated) - 1]
+    name := strings.Join(dot_separated[0:(len(dot_separated) - 1)], " ")
+    name = strings.TrimRight(name, text)
+
+    return name + "." + extension
+  }
+  return title
+}
+
+func generateFileName(s, pwd string, unescape bool, keep bool, cut string) {
+  // Create mapping of filename to newly formatted filename
+  filename := htmlUnescape(s, unescape)
+  filename = cutFromTitle(filename, cut, keep)
+  sub_string := splitSpaceOrDot(filename)
   sections := len(sub_string)
+
   title, season, episode := "", "", ""
+  trailing_text := ""
   season_found, episode_found := false, false
+
   extension := sub_string[sections-1:]
   string_compare := make(map[string]string)
 
-  // Iterate through each dot-seperated slice
-  for i := 0; i < sections; i++ {
+  // Iterate through each dot-seperated slice (up to extension)
+  for i := 0; i < sections - 1; i++ {
+
+    if episode != "" {
+      episode_found = true
+    }
     // Sections beginning with "s" or "S" *may* denote the season
     if strings.HasPrefix(sub_string[i], "s") || strings.HasPrefix(sub_string[i], "S")   {
       section := len(sub_string[i])
@@ -45,7 +85,7 @@ func splitString(s, pwd string) {
             // If at least one int was found after the "S", the season information has been extracted
             if season != "" {
               season_found = true
-              // All substrings before the season (SXX) are appended to title (and capitalized)
+              // All substrings before the season (SXX) are appended to series title (and capitalized)
               for k := 0; k < i; k++ {
                 title += strings.Title(sub_string[k]) + " "
               }
@@ -67,12 +107,16 @@ func splitString(s, pwd string) {
         }
       }
     }
+    // Include episode title after S01E01 if flag was set
+    if keep && season_found && episode_found {
+      trailing_text += " " + strings.Title(sub_string[i])
+    }
   }
 
   // Map each input filepath to the new desired file path for item  
   if title != "" && episode != "" && season != "" && extension[0] != "" {
     old_path := ensureTrailingSlash(pwd) + s
-    new_path := ensureTrailingSlash(pwd) + title + "S" + season + "E" + episode + "." + extension[0]
+    new_path := ensureTrailingSlash(pwd) + title + "S" + season + "E" + episode + trailing_text + "." + extension[0]
     string_compare[old_path] = new_path
   } else {
     string_compare[ensureTrailingSlash(pwd) + s] = "Parse Error. Skipping"
@@ -82,7 +126,7 @@ func splitString(s, pwd string) {
 }
 
 
-func getFiles(pwd string) {
+func getFiles(pwd string, unescape bool, keep bool, cut string) {
   // Since abs_dir must be pre-declared, so must err. If abs_dir and error are defined in the
   // if statement they have no scope outside of it. Pre-declaration is the best mitigation I can find...
   abs_dir := ""
@@ -101,9 +145,9 @@ func getFiles(pwd string) {
   // read all files in specified directory
   files, _ := ioutil.ReadDir(abs_dir)
 
-  // call splitString on each file in the directory (to rename it)
+  // call generateFileName on each file in the directory (to rename it)
   for _, f := range files {
-    splitString(f.Name(), abs_dir)
+    generateFileName(f.Name(), abs_dir, unescape, keep, cut)
   }
 }
 
@@ -122,7 +166,7 @@ func renameFiles(files map[string]string) {
         fmt.Println("Updated: \t" + val + green + "  [Success]" + reset + "\n")
       }
     } else {
-      // value for key was "Parse Error. Skipping" from the splitStrings method. File is likely
+      // value for key was "Parse Error. Skipping" from the generateFileNames method. File is likely
       // not a video file. Or it's identified a limitation of the program (ex., spaces in file name)
       fmt.Println("Could not parse " + key + yellow + "  [Skipping] " + reset)
     }
@@ -130,24 +174,42 @@ func renameFiles(files map[string]string) {
 }
 
 func main() {
+  var unescape bool
+  var keep bool
+  var cut string
+  var path string
 
-  // if the script is run with the help flag, print the following
-  if len(os.Args) >= 2 && (os.Args[1] == "-h" || os.Args[1] == "--help") {
-    fmt.Println(
-          "\nRenamer will parse episodes of tv series and rename them with a clear, consistent style. \n\n" +
-          "Example: \n\t some.series.title.s01e05.branding{year}.x264.HDTV.mp4  =>  Some Series Title S01E05.mp4 \n" +
-          "Usage: \n\t ./renamer /path/to/directory \n" +
-          "Limitations: \n\t - won't work if 's' and 'e' in 's01e01' is dot-seperated" +
-          "\n\t - won't handle spaces in input name properly \n\t - recursive folder search isn't implemented\n" +
-          "Cowardly Disclaimer: \n\t - use at your own risk. Check terminal output to ensure naming was done correctly")
-
-  // if the script is run with a (non-help) argument, then the argument should be the filepath
-  } else if len(os.Args) >= 2 {
-    user_path := os.Args[1:2][0]
-    getFiles(user_path)
-
-  // if no path is provided, simply default to present directory as the path
-  } else {
-    getFiles("./")
+  app := cli.NewApp()
+  app.Name = "Series Renamer"
+  app.Flags = []cli.Flag {
+    cli.BoolFlag{
+      Name:        "u, unescape",
+      Usage:       "whether to html unescape filename",
+      Destination: &unescape,
+    },
+    cli.BoolFlag {
+      Name:        "k, keep",
+      Usage:       "whether to keep episode names",
+      Destination: &keep,
+    },
+    cli.StringFlag{
+      Name:        "c, cut",
+      Value:       "",
+      Usage:       "text to cut from end of filename (branding, encoding details, etc)",
+      Destination: &cut,
+    },
+    cli.StringFlag{
+      Name:        "p, path",
+      Value:       "./",
+      Usage:       "path to folder containing files to be renamed",
+      Destination: &path,
+    },
   }
+
+  app.Action = func(c *cli.Context) {
+    getFiles(path, unescape, keep, cut)
+  }
+
+  app.Run(os.Args)
 }
+
