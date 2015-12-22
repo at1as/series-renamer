@@ -95,7 +95,7 @@ func generateFileName(s, pwd string, unescape bool, keep bool, cut string) {
         // After Season has been extracted, extract the next number as the episode number
         // If there is a dot between S and E, this will fail (S01.E01). This is not common.
         } else if episode_found == false {
-          if sub_string[i][j] >= '0' && sub_string[i][j] <= '9' || sub_string[i][j] == '-' {
+          if sub_string[i][j] >= '0' && sub_string[i][j] <= '9' || sub_string[i][j] == '-' || sub_string[i][j] == 'E' {
             episode = episode + string(sub_string[i][j])
           } else {
             // If at least one int was found after the E, the episode information has been extracted
