@@ -1,44 +1,54 @@
 # Series-Renamer
 
-Series-Renamer will rename episodes of TV series on your computer with a clear and consistent style.
+Series-Renamer will rename episodes of TV series on your computer with a defined clear and consistent style.
 
 ## Example
 
-Illegible titles will all be styled to follow the format **{title} {S}{season#}{E}{episode#}.{extension}**
+Illegible titles will can be styled to follow either of the following formats: 
 
-Ex. *some.series.title.s01e05.branding{1990}.x264.HDTV.mp4*  =>  *Some Series Title S01E05.mp4*
+* **{series title} {S}{season#}{E}{episode#}.{extension}**
+* **{series title} {S}{season#}{E}{episode#} {episode title}.{extension}**
 
-Ex. *some series title s01e05 branding 1990 x264 HDTV.mp4*  =>  *Some Series Title S01E05.mp4*
+Examples: 
+
+* *some.series.title.s01e05.branding{1990}.x264.HDTV.mp4*  =>  *Some Series Title S01E05.mp4*
+* *some series title s01e05 episode title branding 1990 x264 HDTV.mp4*  =>  *Some Series Title S01E05 Episode Title.mp4*
 
 ## Usage
 
-Renamer is written in Go. To use:
-
-- First, Download renamer to your computer
-
-```$ git clone https://github.com/at1as/series-renamer.git```
-
-Renamer can be used any of these two ways:
-
-- Place in the directory whose files you wish to rename
-
 ```bash
-$ mv ./renamer.go /path/to/directory/renamer.go
-$ chmod 775 /path/to/directory/renamer.go
-$ go run /path/to/directory/renamer.go
+$ git clone https://github.com/at1as/series-renamer.git
+$ go run /path/to/directory/renamer.go {flags}
 ```
+#### Flags
 
-- It can also be passed an absolute path parameter:
+**-p, --path**
+*	**Usage**: path to folder containing files to be renamed
+*	**Default**: "./"
 
-```bash
-$ chmod 775 ./renamer.go
-$ go run ./renamer.go /path/to/directory/to/scan
-```
+**-u, --unescape**
+* **Usage**: whether to html unescape filename (ex. "Hello%20World" -> "Hello World")
+*	**Default**: false
+
+**-k, --keep**
+* **Usage**: whether to retain individual episode titles (see examples above)
+*	**Default**: false
+
+**-c, --cut**
+* **Usage**: text to cut from end of filename (branding, encoding details, etc)
+*	**Default**: ""
 
 See `go run renamer.go --help` for details
 
-
 The terminal output will show you what has been performed
+
+#### Examples
+
+```
+$ go run renamer.go -p ~/Movies/ -u -k -c "720p"
+$ go run renamer.go
+$ go run renamer.go --path /Users/johndoe/vids/
+```
 
 ## Limitations
 
